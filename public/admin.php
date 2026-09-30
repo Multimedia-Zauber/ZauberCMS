@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 use ZauberCMS\Auth\Auth;
 use ZauberCMS\Auth\Csrf;
+use ZauberCMS\Core\Authorization;
 use ZauberCMS\Core\Database;
 
 $app = require dirname(__DIR__) . '/bootstrap/app.php';
-$auth = new Auth((new Database($app->config()))->connection());
+$database = (new Database($app->config()))->connection();
+$auth = new Auth($database);
 
 if (!$auth->check()) {
     header('Location: /login');
     exit;
 }
+
+$user = $auth->user();
+$userId = (int) ($user['id'] ?? 0);
+(new Authorization($database))->authorize($userId, 'admin.access');
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['action'] ?? '') === 'logout') {
     if (Csrf::validate($_POST['_token'] ?? null)) {
@@ -22,7 +28,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['action'] ?? '')
     exit;
 }
 
-$user = $auth->user();
 $token = htmlspecialchars(Csrf::token(), ENT_QUOTES, 'UTF-8');
 ?>
 <!doctype html>
