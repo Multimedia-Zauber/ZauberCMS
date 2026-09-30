@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use ZauberCMS\Core\Database;
+use ZauberCMS\Core\Migrator;
+
+require dirname(__DIR__) . '/bootstrap/app.php';
+
+$command = $argv[1] ?? null;
+
+if ($command !== 'migrate') {
+    fwrite(STDOUT, "ZauberCMS CLI\n\nAvailable commands:\n  migrate   Run pending database migrations\n");
+    exit($command === null ? 0 : 1);
+}
+
+$database = new Database();
+$migrator = new Migrator($database->connection(), dirname(__DIR__) . '/database/migrations');
+$applied = $migrator->migrate();
+
+if ($applied === []) {
+    fwrite(STDOUT, "No pending migrations.\n");
+    exit(0);
+}
+
+foreach ($applied as $migration) {
+    fwrite(STDOUT, "Migrated: {$migration}\n");
+}
