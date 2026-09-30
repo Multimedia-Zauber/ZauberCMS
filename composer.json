@@ -1,0 +1,17 @@
+{
+  "name": "multimedia-zauber/zaubercms",
+  "description": "Modular source-available PHP CMS by Multimedia Zauber",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "ZauberCMS\\": "app/"
+    }
+  },
+  "scripts": {
+    "test": "php -r \"echo 'Tests not configured yet.' . PHP_EOL;\""
+  }
+}
