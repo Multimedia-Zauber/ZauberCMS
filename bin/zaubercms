@@ -6,8 +6,7 @@ declare(strict_types=1);
 use ZauberCMS\Core\Database;
 use ZauberCMS\Core\Migrator;
 
-$application = require dirname(__DIR__) . '/bootstrap/app.php';
-$config = $application->config();
+require dirname(__DIR__) . '/bootstrap/app.php';
 
 $command = $argv[1] ?? null;
 
@@ -16,7 +15,7 @@ if ($command !== 'migrate') {
     exit($command === null ? 0 : 1);
 }
 
-$database = new Database($config);
+$database = new Database();
 $migrator = new Migrator($database->connection(), dirname(__DIR__) . '/database/migrations');
 $applied = $migrator->migrate();
 
