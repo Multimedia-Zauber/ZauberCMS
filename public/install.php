@@ -32,6 +32,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    $adminName = trim((string) ($_POST['admin_name'] ?? ''));
+    $adminEmail = mb_strtolower(trim((string) ($_POST['admin_email'] ?? '')));
+    $adminPassword = (string) ($_POST['admin_password'] ?? '');
+
+    if ($adminName === '' || !filter_var($adminEmail, FILTER_VALIDATE_EMAIL) || strlen($adminPassword) < 12) {
+        $errors[] = 'Please provide a valid admin name, email address and a password with at least 12 characters.';
+    }
+
     if ($errors === []) {
         $db = [
             'host' => trim((string) ($_POST['db_host'] ?? '127.0.0.1')),
@@ -62,10 +70,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false]
             );
             $installer->runMigrations($pdo);
+
+            $statement = $pdo->prepare(
+                'INSERT INTO users (name, email, password, role, is_active) VALUES (:name, :email, :password, :role, 1)'
+            );
+            $statement->execute([
+                'name' => $adminName,
+                'email' => $adminEmail,
+                'password' => password_hash($adminPassword, PASSWORD_DEFAULT),
+                'role' => 'admin',
+            ]);
+
             $installer->lockInstallation();
             $success = true;
         } catch (Throwable $exception) {
-            $errors[] = 'Installation failed. Please verify the database settings and file permissions.';
+            $errors[] = 'Installation failed. Please verify the database settings, admin details and file permissions.';
         }
     }
 }
@@ -87,7 +106,7 @@ body{font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0
 <?php endforeach; ?>
 </ul>
 <?php if ($success): ?>
-<div class="notice ok"><strong>Installation completed.</strong> The installer is now locked.</div>
+<div class="notice ok"><strong>Installation completed.</strong> The installer is now locked. <a href="/login">Open admin login</a>.</div>
 <?php else: ?>
 <?php foreach ($errors as $error): ?><div class="notice error"><?= htmlspecialchars($error) ?></div><?php endforeach; ?>
 <form method="post" autocomplete="off">
@@ -98,6 +117,10 @@ body{font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0
 <label>Database name</label><input name="db_database" required>
 <label>Database username</label><input name="db_username" required>
 <label>Database password</label><input type="password" name="db_password">
+<h2>Administrator</h2>
+<label>Admin name</label><input name="admin_name" required autocomplete="name">
+<label>Admin email</label><input type="email" name="admin_email" required autocomplete="email">
+<label>Admin password</label><input type="password" name="admin_password" minlength="12" required autocomplete="new-password">
 <button type="submit">Install ZauberCMS</button>
 </form>
 <?php endif; ?>
