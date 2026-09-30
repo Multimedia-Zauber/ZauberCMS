@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use ZauberCMS\Support\Env;
+
 return [
-    'name' => getenv('APP_NAME') ?: 'ZauberCMS',
-    'env' => getenv('APP_ENV') ?: 'production',
-    'debug' => filter_var(getenv('APP_DEBUG') ?: false, FILTER_VALIDATE_BOOL),
-    'url' => getenv('APP_URL') ?: null,
+    'name' => Env::get('APP_NAME', 'ZauberCMS'),
+    'env' => Env::get('APP_ENV', 'production'),
+    'debug' => Env::get('APP_DEBUG', false),
+    'url' => Env::get('APP_URL'),
 ];
