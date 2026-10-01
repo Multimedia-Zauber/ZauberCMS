@@ -1,0 +1,7 @@
+{
+  "name": "Example Module",
+  "slug": "example",
+  "version": "0.1.0",
+  "entry": "Module.php",
+  "description": "Reference module for the ZauberCMS module system."
+}
